@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop-4.1.xsd
+	http://www.springframework.org/schema/tx
+	http://www.springframework.org/schema/tx/spring-tx-4.1.xsd
+	http://www.springframework.org/schema/jee
+	http://www.springframework.org/schema/jee/spring-jee-4.1.xsd
+	http://www.springframework.org/schema/util
+	http://www.springframework.org/schema/util/spring-util-4.1.xsd">
+
+	<util:list id="cities">
+		<bean class="com.chapter2.spelCollection.City" p:name="北京"
+			p:state="北京" p:population="201023" />
+		<bean class="com.chapter2.spelCollection.City" p:name="石家庄"
+			p:state="河北" p:population="319829" />
+		<bean class="com.chapter2.spelCollection.City" p:name="杭州"
+			p:state="江苏" p:population="423389" />
+		<bean class="com.chapter2.spelCollection.City" p:name="徐州"
+			p:state="江苏" p:population="323332" />
+		<bean class="com.chapter2.spelCollection.City" p:name="深圳"
+			p:state="广州" p:population="84392" />
+		<bean class="com.chapter2.spelCollection.City" p:name="武昌"
+			p:state="湖北" p:population="2839" />
+	</util:list>
+	<!-- 还有util:map，util:set等 -->
+
+	<bean id="spel" class="com.chapter2.spelCollection.ChosenCity">
+		<property name="chosen" value="#{cities[2]}" />
+		<property name="randomChosen"
+			value="#{cities[T(java.lang.Math).random()*cities.size()]}" />
+	</bean>
+
+	<bean id="spel2" class="com.chapter2.spelCollection.ChosenCity2">
+		<!-- （.?[]）查询时会创建新的集合，新的集合中只存放满足括号内的表达式的集合 -->
+		<property name="bigCities" value="#{cities.?[population gt 201023]}" />
+		<!-- （.^[]）查询第一个匹配项；(.$[])查询最后一个匹配项 -->
+		<property name="firstBigCities" value="#{cities.^[population ge 201023]}" />
+		<property name="endBigCities" value="#{cities.$[population ge 201023]}" />
+		<!-- 投影集合（.![]）：从集合的每一个成员中选择特定的属性放入一个新的集合中 -->
+		<property name="cityNames" value="#{cities.![name+', '+state]}" />
+	</bean>
+
+</beans>

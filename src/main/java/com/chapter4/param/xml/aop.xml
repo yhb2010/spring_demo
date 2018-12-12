@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+     http://www.springframework.org/schema/beans/spring-beans.xsd
+     http://www.springframework.org/schema/aop
+     http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+	<bean id="volunteer" class="com.chapter4.param.Volunteer" />
+	<bean id="magician" class="com.chapter4.param.Magician" />
+
+	<aop:config>
+		<aop:aspect ref="magician">
+			<!-- 切点标示了Thinker的thinkOfSomething方法，指定了String参数，然后在args参数中标示了将thoughts作为参数 -->
+			<aop:pointcut id="thinking"
+				expression="execution(* 
+        com.chapter4.param.Thinker.thinkOfSomething(String)) 
+             and args(thought)" />
+
+			<!-- 引用thoughts参数，标识该参数必须传递给Magician的interceptThoughts方法 -->
+			<aop:before pointcut-ref="thinking" method="interceptThoughts"
+				arg-names="thought" />
+		</aop:aspect>
+	</aop:config>
+
+</beans>

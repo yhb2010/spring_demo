@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+     http://www.springframework.org/schema/beans/spring-beans.xsd
+     http://www.springframework.org/schema/aop
+     http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+	<bean id="kenny" class="com.chapter2.bean.Instrumentalist">
+		<property name="song" value="Jingle Bells" />
+		<property name="instrument" ref="saxophone" />
+	</bean>
+
+	<bean id="saxophone" class="com.chapter2.bean.Saxophone" />
+
+	<bean id="audience" class="com.chapter4.befAndAfter.Audience" />
+
+	<aop:config>
+
+		<aop:aspect ref="audience">
+			<aop:pointcut id="performance"
+				expression="execution(* com.chapter2.constructor.Performer.perform(..))" />
+			<aop:before pointcut-ref="performance" method="takeSeats()" />
+			<aop:before pointcut-ref="performance" method="turnOffCellPhones" />
+			<aop:after-returning pointcut-ref="performance"
+				method="applaud" />
+			<aop:after-throwing pointcut-ref="performance"
+				method="demandRefund" />
+		</aop:aspect>
+
+		<aop:aspect>
+			<!-- aop:declare-parents声明了此切面所通知的bean在他的对象层次结构中拥有了新的父类型 -->
+			<!-- 类型匹配了Performer接口的那些bean -->
+			<!-- 会实现Contestant接口 -->
+			<!-- Contestant接口的实现来自GraciousContestant -->
+			<aop:declare-parents types-matching="com.chapter2.constructor.Performer+"
+				implement-interface="com.chapter4.newInterface.Contestant"
+				default-impl="com.chapter4.newInterface.GraciousContestant" />
+		</aop:aspect>
+
+	</aop:config>
+
+</beans>

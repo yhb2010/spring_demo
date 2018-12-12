@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+		http://www.springframework.org/schema/security
+        http://www.springframework.org/schema/security/spring-security-4.0.xsd">
+
+	<import resource="mvc-webflows.xml" />
+	<import resource="jms.xml" />
+	<import resource="jms-client.xml" />
+
+	<!-- 支持注解，同时支持自动检测 -->
+	<context:component-scan base-package="com.mvc" />
+
+	<!-- 使用注解将请求参数绑定到控制器的方法参数上进行校验以及信息转换 -->
+	<mvc:annotation-driven />
+
+	<!-- 配置静态资源 -->
+	<mvc:resources mapping="/resources/**" location="/resources/" />
+
+	<!-- 视图解析器 -->
+	<bean id="viewResolver"
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<!-- 因为使用jstl标签 -->
+		<property name="viewClass"
+			value="org.springframework.web.servlet.view.JstlView" />
+		<property name="prefix" value="/WEB-INF/views/" />
+		<property name="suffix" value=".jsp" />
+	</bean>
+	<!-- 视图解析器Thymeleaf
+	<bean id="viewResolver"
+		class="org.thymeleaf.spring4.view.ThymeleafViewResolver">
+		<property name="templateEngine" ref="templateEngine" />
+	</bean>
+	<bean id="templateEngine"
+		class="org.thymeleaf.spring4.SpringTemplateEngine" >
+		<property name="templateResolver" ref="templateResolver" />
+	</bean>
+	<bean id="templateResolver"
+		class="org.thymeleaf.spring4.templateresolver.SpringResourceTemplateResolver" >
+		<property name="prefix" value="/WEB-INF/views/" />
+		<property name="suffix" value=".html" />
+		<property name="templateMode" value="HTML5" />
+	</bean> -->
+
+	<!-- 解析器beanID必须是multipart开头 -->
+	<!-- 上传文件拦截，设置最大上传文件大小 10M=10*1024*1024(B)=10485760 bytes -->
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxUploadSize" value="10485760" />
+	</bean>
+
+	<!-- 启动Security注解：需要放在*-servlet.xml中，不能放在*-security.xml中 -->
+	<!-- pre-post-annotations：使用SpEL实现调用前后安全性 -->
+	<security:global-method-security
+		secured-annotations="enabled" pre-post-annotations="enabled">
+		<!-- 第一个 * —— 通配 随便率性返回值类型| 第二个 * —— 通配包com.evan.crm.service下的随便率性class|
+			第三个 * —— 通配包com.evan.crm.service下的随便率性class的随便率性办法| 第四个 .. —— 通配 办法可以有0个或多个参数| -->
+		<security:protect-pointcut access="ROLE_TEST"
+			expression="execution (* com.mvc.chapter9.service.CustomerServiceImpl2.*(..))" />
+	</security:global-method-security>
+
+	<!-- rmi客户端 -->
+	<bean id="helloService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean"
+		p:serviceUrl="rmi://localhost:1100/HelloService" p:serviceInterface="com.mvc.chapter10.service.HelloService" />
+
+	<!-- hessian客户端 -->
+	<bean id="helloServiceHessian"
+		class="org.springframework.remoting.caucho.HessianProxyFactoryBean"
+		p:serviceUrl="http://localhost:8081/hessianTest.service"
+		p:serviceInterface="com.mvc.chapter10.service.HelloService" />
+
+	<!-- burlap客户端 -->
+	<bean id="helloServiceBurlap"
+		class="org.springframework.remoting.caucho.BurlapProxyFactoryBean"
+		p:serviceUrl="http://localhost:8081/burlapTest.service"
+		p:serviceInterface="com.mvc.chapter10.service.HelloService" />
+
+	<!-- invoker客户端 -->
+	<bean id="helloServiceInvoker"
+		class="org.springframework.remoting.httpinvoker.HttpInvokerProxyFactoryBean"
+		p:serviceUrl="http://localhost:8081/invokerTest.service"
+		p:serviceInterface="com.mvc.chapter10.service.HelloService" />
+
+	<!-- p:namespaceUri：targetNamespace -->
+	<!-- p:serviceName：service name="jaxwebservice" -->
+	<!-- p:portName：port name="JaxWsServiceImplPort" -->
+	<bean id="jaxWsService"
+		class="org.springframework.remoting.jaxws.JaxWsPortProxyFactoryBean"
+		p:wsdlDocumentUrl="http://localhost:8083/services/jaxwebservice?wsdl"
+		p:serviceName="jaxwebservice" p:portName="JaxWsServiceImplPort"
+		p:serviceInterface="com.mvc.chapter10.service.JaxWsService"
+		p:namespaceUri="http://service.chapter10.mvc.com/" />
+
+	<!-- 国际化，ReloadableResourceBundleMessageSource属性文件修改后可以自动刷新-->
+	<bean id="messageSource"
+        class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+        <property name="basenames">
+            <list>
+            	<!-- 也可以以file:开头：从文件系统查找 -->
+                <value>classpath:properties/flex</value>
+            </list>
+        </property>
+        <property name="cacheSeconds" value="5" />
+    </bean>
+
+</beans>

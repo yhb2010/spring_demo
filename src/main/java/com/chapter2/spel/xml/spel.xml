@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop-4.1.xsd
+	http://www.springframework.org/schema/tx
+	http://www.springframework.org/schema/tx/spring-tx-4.1.xsd
+	http://www.springframework.org/schema/jee
+	http://www.springframework.org/schema/jee/spring-jee-4.1.xsd">
+
+	<bean id="spel" class="com.chapter2.spel.Instrumentalist">
+		<property name="song" value="Jingle #{'Bells'}" />
+		<property name="b" value="#{true}" />
+		<property name="instrument" value="#{saxophone}" />
+	</bean>
+
+	<bean id="spel2" class="com.chapter2.spel.Instrumentalist2">
+		<property name="song" value="#{spel.song}" />
+		<!-- null-safe存取器可以避免抛出空指针，如果为null就不执行后面的方法 -->
+		<property name="song2" value="#{spel2.songSelect()?.toUpperCase()}" />
+		<!-- 调用静态变量或方法 -->
+		<property name="pi" value="#{T(java.lang.Math).PI}" />
+		<property name="randomNum" value="#{T(java.lang.Math).random()}" />
+	</bean>
+
+	<bean id="saxophone" class="com.chapter2.bean.Saxophone" />
+
+</beans>
